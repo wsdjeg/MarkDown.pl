@@ -527,8 +527,10 @@ sub _DoAnchors {
 		  \[
 		    ($g_nested_brackets)	# link text = $2
 		  \]
+
 		  [ ]?				# one optional space
 		  (?:\n[ ]*)?		# one optional newline followed by spaces
+
 		  \[
 		    (.*?)		# id = $3
 		  \]
@@ -538,9 +540,11 @@ sub _DoAnchors {
 		my $whole_match = $1;
 		my $link_text   = $2;
 		my $link_id     = lc $3;
+
 		if ($link_id eq "") {
 			$link_id = lc $link_text;     # for shortcut links like [this][].
 		}
+
 		if (defined $g_urls{$link_id}) {
 			my $url = $g_urls{$link_id};
 			$url =~ s! \* !$g_escape_table{'*'}!gx;		# We've got to encode these to avoid
@@ -585,16 +589,20 @@ sub _DoAnchors {
 		my $link_text   = $2;
 		my $url	  		= $3;
 		my $title		= $6;
+
 		$url =~ s! \* !$g_escape_table{'*'}!gx;		# We've got to encode these to avoid
 		$url =~ s!  _ !$g_escape_table{'_'}!gx;		# conflicting with italics/bold.
 		$result = "<a href=\"$url\"";
+
 		if (defined $title) {
 			$title =~ s/"/&quot;/g;
 			$title =~ s! \* !$g_escape_table{'*'}!gx;
 			$title =~ s!  _ !$g_escape_table{'_'}!gx;
 			$result .=  " title=\"$title\"";
 		}
+
 		$result .= ">$link_text</a>";
+
 		$result;
 	}xsge;
 
@@ -616,20 +624,25 @@ sub _DoImages {
 		  !\[
 		    (.*?)		# alt text = $2
 		  \]
+
 		  [ ]?				# one optional space
 		  (?:\n[ ]*)?		# one optional newline followed by spaces
+
 		  \[
 		    (.*?)		# id = $3
 		  \]
+
 		)
 	}{
 		my $result;
 		my $whole_match = $1;
 		my $alt_text    = $2;
 		my $link_id     = lc $3;
+
 		if ($link_id eq "") {
 			$link_id = lc $alt_text;     # for shortcut links like ![this][].
 		}
+
 		$alt_text =~ s/"/&quot;/g;
 		if (defined $g_urls{$link_id}) {
 			my $url = $g_urls{$link_id};
@@ -648,6 +661,7 @@ sub _DoImages {
 			# If there's no such link ID, leave intact:
 			$result = $whole_match;
 		}
+
 		$result;
 	}xsge;
 
@@ -681,6 +695,7 @@ sub _DoImages {
 		if (defined($6)) {
 			$title		= $6;
 		}
+
 		$alt_text =~ s/"/&quot;/g;
 		$title    =~ s/"/&quot;/g;
 		$url =~ s! \* !$g_escape_table{'*'}!gx;		# We've got to encode these to avoid
@@ -692,6 +707,7 @@ sub _DoImages {
 			$result .=  " title=\"$title\"";
 		}
 		$result .= $g_empty_element_suffix;
+
 		$result;
 	}xsge;
 
@@ -877,6 +893,7 @@ sub _ProcessListItems {
 		my $item = $4;
 		my $leading_line = $1;
 		my $leading_space = $2;
+
 		if ($leading_line or ($item =~ m/\n{2,}/)) {
 			$item = _RunBlockGamut(_Outdent($item));
 		}
@@ -886,6 +903,7 @@ sub _ProcessListItems {
 			chomp $item;
 			$item = _RunSpanGamut($item);
 		}
+
 		"<li>" . $item . "</li>\n";
 	}egmx;
 
@@ -914,11 +932,14 @@ sub _DoCodeBlocks {
 		}{
 			my $codeblock = $1;
 			my $result; # return value
+
 			$codeblock = _EncodeCode(_Outdent($codeblock));
 			$codeblock = _Detab($codeblock);
 			$codeblock =~ s/\A\n+//; # trim leading newlines
 			$codeblock =~ s/\s+\z//; # trim trailing whitespace
+
 			$result = "\n\n<pre><code>" . $codeblock . "\n</code></pre>\n\n";
+
 			$result;
 		}egmx;
 
@@ -1042,6 +1063,7 @@ sub _DoBlockQuotes {
 			$bq =~ s/^[ \t]*>[ \t]?//gm;	# trim one level of quoting
 			$bq =~ s/^[ \t]+$//mg;			# trim whitespace-only lines
 			$bq = _RunBlockGamut($bq);		# recurse
+
 			$bq =~ s/^/  /g;
 			# These leading spaces screw with <pre> content, so we need to fix that:
 			$bq =~ s{
@@ -1051,6 +1073,7 @@ sub _DoBlockQuotes {
 					$pre =~ s/^  //mg;
 					$pre;
 				}egsx;
+
 			"<blockquote>\n$bq\n</blockquote>\n\n";
 		}egmx;
 
@@ -1299,66 +1322,119 @@ __END__
 
 
 =pod
+
 =head1 NAME
+
 B<Markdown>
+
+
 =head1 SYNOPSIS
+
 B<Markdown.pl> [ B<--html4tags> ] [ B<--version> ] [ B<-shortversion> ]
     [ I<file> ... ]
+
+
 =head1 DESCRIPTION
+
 Markdown is a text-to-HTML filter; it translates an easy-to-read /
 easy-to-write structured text format into HTML. Markdown's text format
 is most similar to that of plain text email, and supports features such
 as headers, *emphasis*, code blocks, blockquotes, and links.
+
 Markdown's syntax is designed not as a generic markup language, but
 specifically to serve as a front-end to (X)HTML. You can  use span-level
 HTML tags anywhere in a Markdown document, and you can use block level
 HTML tags (like <div> and <table> as well).
+
 For more information about Markdown's syntax, see:
+
     http://daringfireball.net/projects/markdown/
+
+
 =head1 OPTIONS
+
 Use "--" to end switch parsing. For example, to open a file named "-z", use:
+
 	Markdown.pl -- -z
+
 =over 4
+
+
 =item B<--html4tags>
+
 Use HTML 4 style for empty element tags, e.g.:
+
     <br>
+
 instead of Markdown's default XHTML style tags, e.g.:
+
     <br />
+
+
 =item B<-v>, B<--version>
+
 Display Markdown's version number and copyright information.
+
+
 =item B<-s>, B<--shortversion>
+
 Display the short-form version number.
+
+
 =back
+
+
+
 =head1 BUGS
+
 To file bug reports or feature requests (other than topics listed in the
 Caveats section above) please send email to:
+
     support@daringfireball.net
+
 Please include with your report: (1) the example input; (2) the output
 you expected; (3) the output Markdown actually produced.
+
+
 =head1 VERSION HISTORY
+
 See the readme file for detailed release notes for this version.
+
 1.0.1 - 14 Dec 2004
+
 1.0 - 28 Aug 2004
+
+
 =head1 AUTHOR
+
     John Gruber
     http://daringfireball.net
+
     PHP port and other contributions by Michel Fortin
     http://michelf.com
+
+
 =head1 COPYRIGHT AND LICENSE
+
 Copyright (c) 2003-2004 John Gruber   
 <http://daringfireball.net/>   
 All rights reserved.
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
+
 * Redistributions of source code must retain the above copyright notice,
   this list of conditions and the following disclaimer.
+
 * Redistributions in binary form must reproduce the above copyright
   notice, this list of conditions and the following disclaimer in the
   documentation and/or other materials provided with the distribution.
+
 * Neither the name "Markdown" nor the names of its contributors may
   be used to endorse or promote products derived from this software
   without specific prior written permission.
+
 This software is provided by the copyright holders and contributors "as
 is" and any express or implied warranties, including, but not limited
 to, the implied warranties of merchantability and fitness for a
@@ -1370,4 +1446,5 @@ profits; or business interruption) however caused and on any theory of
 liability, whether in contract, strict liability, or tort (including
 negligence or otherwise) arising in any way out of the use of this
 software, even if advised of the possibility of such damage.
+
 =cut
