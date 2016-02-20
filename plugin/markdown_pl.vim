@@ -13,6 +13,7 @@ function! MarkDownPreview()
     let s:fileName = expand("%:p:r").'.html'
     silent exec '!'.g:markdown_pl_home.'/bin/markdown.pl % >  '.s:fileName
     call system('xdg-open file://'.s:fileName)
+    call system('sleep 1')
     call system('rm '.s:fileName)
 endf
 
