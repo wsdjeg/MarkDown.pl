@@ -13,6 +13,8 @@ function! MarkDownPreview()
     let s:fileName = expand("%:p:r").'.html'
     silent exec '!'.g:markdown_pl_home.'/bin/MarkDown.pl % >  '.s:fileName
     exec '!xdg-open file://'.s:fileName
+    echon "\r\r"
+    echon ''
 endf
 
 let g:markdown_pl_loaded = 1
